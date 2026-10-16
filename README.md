@@ -2,7 +2,7 @@
 
 一个简洁的本地 AI 讨论室：你、Codex 和 Claude 在同一个聊天窗口里交流，DeepSeek 可以按需整理项目记录。
 
-Maple 基于 [auspex0/Parley](https://github.com/auspex0/parley) 1.2.1 定制，保留上游 MIT 许可与作者信息。这里发布的是源码预览版，尚未提供独立安装包。
+Maple 基于 [auspex0/Parley](https://github.com/auspex0/parley) 1.2.1 定制，保留上游 MIT 许可与作者信息。当前为早期预览版，提供源码及 Windows x64 免安装包。
 
 ![Maple 字体与聊天界面示例](docs/maple-preview.png)
 
@@ -18,10 +18,13 @@ Maple 基于 [auspex0/Parley](https://github.com/auspex0/parley) 1.2.1 定制，
 
 ## 怎么开始
 
-1. 安装 [Node.js 22 或更新版本](https://nodejs.org/)。
-2. 安装并登录你要使用的官方 CLI：Codex 或 Claude Code。可以先只用其中一个，将另一个设为休眠。
-3. 下载本仓库 ZIP，解压到你喜欢的文件夹。
-4. Windows 用户双击根目录的 **start-maple.cmd**。
+Windows 推荐用法：
+
+1. 在 [下载页面](https://github.com/putianjie125-bit/Maple/releases/tag/v0.1.0) 获取 **Maple-0.1.0-windows-x64.zip**。
+2. 解压到你喜欢的文件夹，双击根目录的 **start-maple.cmd**。应用包已内置 Node.js 运行时。
+3. 安装并登录你要使用的官方 CLI：Codex 或 Claude Code。可以先只用其中一个，将另一个设为休眠。应用包不包含这些 CLI 和账号。
+
+如果下载的是源码 ZIP，请先自行安装 [Node.js 22 或更新版本](https://nodejs.org/)。Windows 源码目录也提供同名启动脚本。
 
 也可以在源码目录运行：
 
@@ -87,7 +90,7 @@ node --test --test-timeout=30000 test/*.test.mjs test/unit.mjs
 
 这些检查使用模拟 CLI/API，不调用付费模型。当前版本在 Windows 上验证了 58 项检查，以及启动、字体加载和聊天区参数切换。仓库 CI 会持续检查这组功能。
 
-界面和记录模块仍是早期预览。上游调度器测试保留在 `test` 中，测试说明见 [验证说明](docs/VALIDATION.md)。不要将上游的历史验证记录当作本版本已验证的结果。
+界面和记录模块仍是早期预览。Windows 免安装包未提供代码签名或安装程序；运行时来自 Node.js 官方发布文件，包含其许可。上游调度器测试保留在 `test` 中，测试说明见 [验证说明](docs/VALIDATION.md)。不要将上游的历史验证记录当作本版本已验证的结果。
 
 ## 来源与许可
 

@@ -7,9 +7,13 @@ $ErrorActionPreference='Stop'
 $taskSource=Split-Path -Parent $PSScriptRoot
 if(-not $DataDir){$DataDir=Join-Path $env:USERPROFILE '.maple'}
 $taskRoot=[IO.Path]::GetFullPath($DataDir)
-$taskNode=Get-Command node.exe -ErrorAction SilentlyContinue
-if(-not $taskNode){throw 'Please install Node.js 22 or newer from https://nodejs.org/ and try again.'}
-$taskMajor=[int]((& $taskNode.Source --version).TrimStart('v').Split('.')[0])
+$taskNodePath=Join-Path $taskSource 'runtime\node.exe'
+if(-not (Test-Path -LiteralPath $taskNodePath)){
+ $taskNode=Get-Command node.exe -ErrorAction SilentlyContinue
+ if(-not $taskNode){throw 'Please download the Windows ZIP from Maple Releases, or install Node.js 22 or newer from https://nodejs.org/.'}
+ $taskNodePath=$taskNode.Source
+}
+$taskMajor=[int]((& $taskNodePath --version).TrimStart('v').Split('.')[0])
 if($taskMajor -lt 22){throw 'Maple needs Node.js 22 or newer. Please update Node.js.'}
 $taskUrl='http://127.0.0.1:'+$Port
 function Test-MapleReady {
@@ -24,7 +28,7 @@ try{
   if(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue){throw ('Port '+$Port+' is in use by another app. Choose another port with -Port.')}
   New-Item -ItemType Directory -Path $taskRoot -Force|Out-Null
   $taskArgs='"'+(Join-Path $taskSource 'parley.mjs')+'" --root "'+$taskRoot+'" --port '+$Port+' --no-open'
-  $taskChild=Start-Process -FilePath $taskNode.Source -ArgumentList $taskArgs -WorkingDirectory $taskSource -WindowStyle Hidden -RedirectStandardOutput (Join-Path $taskRoot 'server.log') -RedirectStandardError (Join-Path $taskRoot 'server-error.log') -PassThru
+  $taskChild=Start-Process -FilePath $taskNodePath -ArgumentList $taskArgs -WorkingDirectory $taskSource -WindowStyle Hidden -RedirectStandardOutput (Join-Path $taskRoot 'server.log') -RedirectStandardError (Join-Path $taskRoot 'server-error.log') -PassThru
   [IO.File]::WriteAllText((Join-Path $taskRoot 'server.pid'),[string]$taskChild.Id)
   $taskReady=$false
   for($taskTry=0;$taskTry -lt 40;$taskTry++){

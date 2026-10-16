@@ -57,3 +57,6 @@ preview*/
 **/state.json
 **/room.json
 **/transcript.md
+runtime/
+distribution/
+*.zip
