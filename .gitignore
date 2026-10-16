@@ -57,6 +57,11 @@ preview*/
 **/state.json
 **/room.json
 **/transcript.md
+**/记忆状态.json
+**/原始对话.md
+**/项目记忆.md
+**/已采用记忆.md
+**/历史摘要/
 runtime/
 distribution/
 *.zip

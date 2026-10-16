@@ -1,6 +1,6 @@
 # 验证范围
 
-Maple 0.1.0 的主要验收检查为 `npm test`，或 README 中的 Node 命令：
+Maple 0.1.x 的主要验收检查为 `npm test`，或 README 中的 Node 命令：
 
 - 模型和思考强度切换、非法参数拒绝、登录令牌及来源保护。
 - UI 和本地字体资源版本一致性。

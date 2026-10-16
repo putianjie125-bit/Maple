@@ -1,6 +1,6 @@
 {
   "name": "maple-local",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Maple: a Chinese local AI discussion room based on Parley, with optional DeepSeek project notes.",
   "type": "module",
@@ -23,7 +23,7 @@
     "test:sequences": "node test/scheduler-sequences.mjs",
     "bench": "node test/benchmark.mjs",
     "test:integration": "npm run test:retry && npm run test:provenance && npm run test:sequences && npm run test:automatic && npm run test:claude-sessions",
-    "test:all": "npm run test:unit && npm run test:integration && npm run test:smoke && npm run test:browser && npm run test:package",
+    "test:all": "npm test",
     "test:package": "node test/package.mjs",
     "test:legacy-smoke": "node test/smoke.mjs"
   },
@@ -48,9 +48,11 @@
     "scripts/",
     "start-maple.cmd",
     "README.md",
-    "MAPLE.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "docs/VALIDATION.md",
+    "docs/maple-preview.png"
   ],
   "devDependencies": {
     "@playwright/test": "^1.62.1"

@@ -20,7 +20,7 @@ Maple 基于 [auspex0/Parley](https://github.com/auspex0/parley) 1.2.1 定制，
 
 Windows 推荐用法：
 
-1. 在 [下载页面](https://github.com/putianjie125-bit/Maple/releases/tag/v0.1.0) 获取 **Maple-0.1.0-windows-x64.zip**。
+1. 在 [下载页面](https://github.com/putianjie125-bit/Maple/releases/tag/v0.1.1) 获取 **Maple-0.1.1-windows-x64.zip**。
 2. 解压到你喜欢的文件夹，双击根目录的 **start-maple.cmd**。应用包已内置 Node.js 运行时。
 3. 安装并登录你要使用的官方 CLI：Codex 或 Claude Code。可以先只用其中一个，将另一个设为休眠。应用包不包含这些 CLI 和账号。
 
@@ -98,4 +98,4 @@ node --test --test-timeout=30000 test/*.test.mjs test/unit.mjs
 - UI 字体：[Adobe Source Han Serif](https://github.com/adobe-fonts/source-han-serif)，SIL OFL 1.1。
 - 代码字体：[JetBrains Mono](https://github.com/JetBrains/JetBrainsMono)，SIL OFL 1.1。
 
-原版说明保存在 [UPSTREAM-README.md](docs/UPSTREAM-README.md)。Maple 是独立的社区定制版，与 OpenAI、Anthropic 和 DeepSeek 没有官方隶属关系。
+原版资料请查看 [Parley 上游仓库](https://github.com/auspex0/parley)。本仓库仅保留与 Maple 当前版本有关的用户说明，上游测试代码继续保留以便回归验证。Maple 是独立的社区定制版，与 OpenAI、Anthropic 和 DeepSeek 没有官方隶属关系。
