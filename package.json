@@ -1,0 +1,58 @@
+{
+  "name": "maple-local",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Maple: a Chinese local AI discussion room based on Parley, with optional DeepSeek project notes.",
+  "type": "module",
+  "bin": {
+    "maple": "parley.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node parley.mjs",
+    "test": "node --test --test-timeout=30000 test/*.test.mjs test/unit.mjs",
+    "test:smoke": "node test/smoke.mjs",
+    "test:browser": "playwright test --config test/browser.config.mjs",
+    "test:unit": "node --test test/unit.mjs",
+    "test:retry": "node test/retry.mjs",
+    "test:automatic": "node test/automatic.mjs",
+    "test:claude-sessions": "node test/claude-sessions.mjs",
+    "test:provenance": "node test/provenance.mjs",
+    "test:sequences": "node test/scheduler-sequences.mjs",
+    "bench": "node test/benchmark.mjs",
+    "test:integration": "npm run test:retry && npm run test:provenance && npm run test:sequences && npm run test:automatic && npm run test:claude-sessions",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:smoke && npm run test:browser && npm run test:package",
+    "test:package": "node test/package.mjs",
+    "test:legacy-smoke": "node test/smoke.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/putianjie125-bit/Maple.git"
+  },
+  "homepage": "https://github.com/putianjie125-bit/Maple#readme",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "cli",
+    "multi-agent",
+    "chat"
+  ],
+  "files": [
+    "parley.mjs",
+    "lib/",
+    "ui/",
+    "assets/",
+    "scripts/",
+    "start-maple.cmd",
+    "README.md",
+    "MAPLE.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}

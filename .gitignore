@@ -1,0 +1,59 @@
+node_modules/
+coverage/
+.parley/
+.roundtable/
+
+# Local configuration and diagnostics may contain credentials or transcripts.
+.env
+.env.*
+!.env.example
+.npmrc
+*.log
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Demo captures and screenshots live in the working copy while a release is
+# being put together; docs/ holds the ones the README actually links.
+/*.webm
+/*.mp4
+/*.gif
+/*.png
+/*.jpg
+
+# Scratch dirs from ad-hoc browser/demo runs. The test suite itself works out
+# of the OS temp dir, so nothing here is ever needed again.
+.tmp-*/
+.test-tmp/
+
+# What the smoke suite leaves behind when it fails, for CI to upload.
+smoke-failure/
+browser-failure/
+
+# Local scratch: drafts and captured command output.
+/radmeopus5.md
+/vlc-help.txt
+
+# Maple local-only state and test outputs
+.maple/
+.maple-data/
+.recorder/
+.records/
+.personal-preferences.json
+.workspace-automation.json
+*.dpapi
+*.pid
+preview*/
+.effort-api-*/
+.preferences-api-*/
+.preferences-test-*/
+.quota-api-*/
+.quota-test-*/
+.recorder-api-*/
+.recorder-test-*/
+.reset-api-*/
+**/events.jsonl
+**/state.json
+**/room.json
+**/transcript.md

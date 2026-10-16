@@ -1,0 +1,33 @@
+name: Maple checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "22"
+      - name: Check runtime syntax
+        run: |
+          node --check parley.mjs
+          node --check ui/app.js
+          node --check ui/controls.js
+          node --check ui/recorder.js
+          node --check lib/client-assets.mjs
+      - name: Test using local fake CLIs and API responses
+        run: npm test

@@ -1,0 +1,34 @@
+#recorderDialog { width:min(980px,calc(100vw - 40px)); max-height:90vh; padding:24px; border:1px solid var(--border2);border-radius:20px; background:var(--bg2);color:var(--text);box-shadow:0 24px 90px #0008; }
+#recorderDialog::backdrop {background:#0009;backdrop-filter:blur(5px);}
+#recorderDialog .rec-head {display:flex;justify-content:space-between;gap:16px;align-items:flex-start;}
+#recorderDialog h2 {margin:0;font-size:21px;}
+#recorderDialog h3 {margin:0 0 12px;font-size:15px;}
+#recorderDialog p {font-size:13px;color:var(--text-dim);line-height:1.65;}
+#recorderDialog .rec-card {margin-top:18px;padding:18px;border:1px solid var(--border2);border-radius:14px;background:var(--panel);}
+#recorderDialog .rec-grid {display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+#recorderDialog label {display:block;font-size:13px;color:var(--text-dim);margin-bottom:12px;}
+#recorderDialog input {display:block;width:100%;box-sizing:border-box;margin-top:7px;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:9px;font-size:14px;}
+#recorderDialog input:focus {outline:2px solid var(--codex);outline-offset:1px;}
+#recorderDialog button {padding:8px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--panel2);color:var(--text);cursor:pointer;font-size:13px;}
+#recorderDialog button:hover {border-color:var(--codex);}
+#recorderDialog button:disabled {opacity:.45;cursor:not-allowed;}
+#recorderDialog .rec-primary {background:var(--codex);color:#0b211b;border-color:transparent;font-weight:650;}
+#recorderDialog .rec-muted {color:var(--text-dim);}
+#recorderDialog .rec-actions {display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+#recKeyState {font-size:12px;color:var(--text-dim);}
+#recorderDialog .rec-note {font-size:12px;margin:8px 0 12px;}
+#recMessage {font-size:13px;line-height:1.6;min-height:22px;margin:10px 0;white-space:pre-wrap;}
+#recMessage.rec-error {color:var(--danger-fg,#ffada8);}
+#recMessage.rec-success {color:var(--codex);}
+#recorderDialog .rec-memory {white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8;font-size:14px;padding:18px;background:var(--bg);border-radius:10px;max-height:390px;overflow:auto;}
+#recorderDialog .rec-source-ref {font:inherit;padding:0 3px;color:var(--codex);border:0;background:transparent;}
+#recSourceWrap {margin-top:14px;font-size:13px;}
+#recorderDialog .rec-review-label{margin-top:18px}
+#recorderDialog textarea{display:block;width:100%;box-sizing:border-box;margin-top:8px;padding:10px 12px;border:1px solid var(--border2);border-radius:9px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;resize:vertical}
+#recSource {white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:14px;background:var(--bg);border-radius:8px;line-height:1.7;}
+@media(max-width:650px){#recorderDialog{padding:14px;}#recorderDialog .rec-grid{grid-template-columns:1fr;}#recorderDialog .rec-card{padding:14px;}}
+#recorderDialog .rec-config>summary{cursor:pointer;font-size:13px;font-weight:600;list-style-position:inside}
+#recConfigState{font-size:11px;font-weight:400;color:var(--text-dim);margin-left:10px}
+#recorderDialog .rec-config-body{margin-top:16px}
+#recorderDialog .rec-extra{margin-top:16px}
+#recorderDialog .rec-extra>summary{font-size:12px;cursor:pointer;color:var(--text-dim);padding:6px 0;list-style-position:inside}

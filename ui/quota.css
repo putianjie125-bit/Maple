@@ -1,0 +1,42 @@
+#quotaMini{padding:4px 10px 8px;color:var(--text-dim);font-size:11.5px;line-height:1.9}
+#quotaMini>div{display:flex;justify-content:space-between;gap:10px}
+#quotaMini span{font-variant-numeric:tabular-nums;color:var(--text)}
+#quotaDialog{width:min(1000px,calc(100vw - 36px));max-height:88vh;overflow:auto;box-sizing:border-box;padding:26px;border:1px solid var(--border2);border-radius:20px;background:var(--bg2);color:var(--text);box-shadow:0 24px 90px #0008}
+#quotaDialog::backdrop{background:#0008;backdrop-filter:blur(5px)}
+#quotaDialog .q-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}
+#quotaDialog h2{font-size:23px;margin:0 0 7px;letter-spacing:-.4px}
+#quotaDialog p{line-height:1.65}
+#quotaDialog .q-head p{font-size:13px;color:var(--text-dim);margin:0}
+#quotaDialog button{background:var(--panel);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:9px 13px;cursor:pointer;font-size:13px}
+#quotaDialog button:disabled{opacity:.5;cursor:wait}
+#quotaDialog button:hover{border-color:var(--codex)}
+#quotaDialog .q-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+#quotaDialog .q-card{border:1px solid var(--border2);border-radius:15px;padding:20px;background:var(--panel);min-height:245px}
+#quotaDialog .q-provider{display:flex;align-items:center;gap:9px;margin-bottom:26px;flex-wrap:wrap}
+#quotaDialog h3{margin:0;font-size:16px}
+#quotaDialog .q-avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:9px;font-size:14px;font-weight:700;background:var(--panel2);color:var(--codex)}
+#quotaDialog .q-claude .q-avatar{color:#d47954}
+#quotaDialog .q-deepseek .q-avatar{color:#637bf1}
+#quotaDialog .q-tag{font-size:10px;color:var(--text-dim);margin-left:auto}
+#quotaDialog .q-label{font-size:12px;color:var(--text-dim);margin-bottom:9px}
+#quotaDialog .q-window+.q-window{margin-top:24px}
+#quotaDialog .q-value,#quotaDialog .q-money{font-size:42px;line-height:1.15;font-weight:650;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#quotaDialog .q-money{font-size:34px;margin:14px 0 20px;color:#637bf1;letter-spacing:-.7px}
+#quotaDialog .q-percent{font-size:22px;letter-spacing:0;margin-left:3px}
+#quotaDialog .q-remaining{font-size:12px;font-weight:400;color:var(--text-dim);letter-spacing:0;margin-left:10px}
+#quotaDialog .q-bar{height:9px;background:var(--panel2);border-radius:10px;overflow:hidden;margin:17px 0 11px}
+#quotaDialog .q-fill{height:100%;border-radius:10px;background:var(--codex);transition:width .35s}
+#quotaDialog .q-claude .q-fill{background:#d47954}
+#quotaDialog .q-fill.q-warn{background:#cf982c}
+#quotaDialog .q-fill.q-low{background:#de6659}
+#quotaDialog .q-detail{font-size:11px;color:var(--text-dim);margin:5px 0}
+#quotaDialog .q-unknown{font-size:44px;line-height:1.2;color:var(--text-faint);margin:10px 0 15px}
+#quotaDialog .q-window-unknown{font-size:19px;margin:12px 0;color:var(--text-dim)}
+#quotaDialog .q-explain{font-size:12px;color:var(--text-dim);margin:10px 0;overflow-wrap:anywhere}
+#quotaDialog .q-link{font-size:11px;color:var(--text-dim);display:inline-block;margin-top:12px}
+#quotaDialog .q-bucket{font-size:12px;margin:22px 0 12px}
+#quotaDialog .q-reset-box{margin-top:24px;padding-top:16px;border-top:1px solid var(--border2)}
+#quotaDialog .q-reset-button{margin:9px 0 4px;font-size:12px}
+#quotaDialog .q-footer{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:12px;font-size:12px;color:var(--text-dim)}
+#quotaDialog .q-note{font-size:11px;color:var(--text-dim);margin:16px 0 0}
+@media(max-width:800px){#quotaDialog .q-grid{grid-template-columns:1fr}#quotaDialog .q-card{min-height:0}#quotaDialog{padding:18px}#quotaDialog .q-provider{margin-bottom:18px}}
