@@ -23,6 +23,7 @@ test('consensus is off by default; same composer starts a task and shows bilater
   await app.screenshot({path:testInfo.outputPath('consensus.png'),fullPage:true});
   await app.setViewportSize({width:390,height:844});
   if(await app.locator('#navScrim').isVisible())await app.locator('#navScrim').click({position:{x:300,y:20}});
+  await expect(app.locator('#sidebar')).not.toBeInViewport();
   expect(await app.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
   await app.screenshot({path:testInfo.outputPath('consensus-mobile.png'),fullPage:true});
   await app.setViewportSize({width:1440,height:1000});
