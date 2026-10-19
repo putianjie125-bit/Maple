@@ -25,6 +25,8 @@ import { createCausalCoordinator as coordinateCausal } from "./lib/causal-coordi
 import { relayAllowanceNote } from "./lib/budget-prompts.mjs";
 import { snapshotClientAssets } from "./lib/client-assets.mjs";
 import { claudeLoggedIn } from "./lib/claude-auth.mjs";
+import { createConsensus } from "./lib/consensus.mjs";
+import { consensusTransport } from "./lib/consensus-transport.mjs";
 import { createRecorder } from "./lib/recorder.mjs";
 import { createQuota, claudeObservation } from "./lib/quota.mjs";
 import { readPersonalPreferences } from "./lib/preferences.mjs";
@@ -1465,7 +1467,7 @@ async function claudeSend(room, { seat = "claude", prompt, briefing, onStream, o
   };
 
   const r = await runCli(resolveCommand(cfg.command), args, {
-    cwd: workDir(room), timeoutMs: seatTimeout(room, "claude"), input, onLine, room, agent: "claude",
+    cwd: workDir(room), timeoutMs: seatTimeout(room, seat), input, onLine, room, agent: seat,
   });
 
   if (r.stopped) throw new AdapterError("claude was stopped by you", { stopped: true });
@@ -1556,7 +1558,7 @@ async function codexSend(room, { seat = "codex", prompt, briefing, onStream, onA
   };
 
   const r = await runCli(resolveCommand(cfg.command), args, {
-    cwd: workDir(room), timeoutMs: seatTimeout(room, "codex"), input, onLine, room, agent: "codex",
+    cwd: workDir(room), timeoutMs: seatTimeout(room, seat), input, onLine, room, agent: seat,
   });
 
   let fileText = null;
@@ -2015,7 +2017,49 @@ function loadRoom(name, seatChoice, create = false) {
     catchUpScheduled: false,
   };
   rooms.set(name, room);
+  consensusFor(room);
   return room;
+}
+
+function consensusFor(room) {
+  if (room.consensus) return room.consensus;
+  room.consensus = createConsensus({
+    directory: path.join(room.dir, "consensus", "tasks"),
+    timeoutMs: () => Math.min(1800000, Math.max(10000, room.cfg.timeoutMs || 300000)),
+    invoke: consensusTransport(room, {adapters, beginRun, releaseSeat, stopRun}),
+    publish: ({taskId, round, phase, calls, version, hash}) => {
+      for (const call of calls) {
+        let text;
+        if (phase === 'confirmation') {
+          const vote = room.consensus.snapshot().candidates.find(c => c.version === version).confirmations[call.model];
+          text = `🤝 共识确认 v${version} · ${vote.valid ? vote.decision : '确认无效，未计为同意'}\nSHA-256: ${hash}\n${vote.reason || vote.protocolError}`;
+        } else {
+          const result = JSON.parse(call.text.trim().replace(/^```(?:json)?\s*\n([\s\S]*?)\n```$/, '$1'));
+          text = `🤝 第 ${round} 轮独立观点\n${result.opinion}` + (result.proposal ? '\n\n候选方案：\n' + result.proposal : '') +
+            (result.disagreements.length ? '\n\n尚未解决：\n' + result.disagreements.join('\n') : '');
+        }
+        appendEntry(room, {kind:"agent", author:room.consensusSeats[call.model], text,
+          meta:{consensus:{taskId, round, model:call.model, phase, version, hash}, ...(call.usage ? {tokens:call.usage} : {})}});
+      }
+    },
+    onChange: task => {
+      if (["CONSENSUS_REACHED", "UNRESOLVED", "STOPPED", "FAILED"].includes(task.state) && room.consensusNotice !== task.id + task.state) {
+        room.consensusNotice = task.id + task.state;
+        appendEntry(room, {kind:"system", author:"system", text:`🤝 共识协商 ${task.state} · ${task.usedRounds}/${task.maxRounds} 轮。${task.finalResult ? "双方已确认同一方案；这不等于客观验证。\n" + task.finalResult.content : "尚未达成共识。"}`,
+          meta:{consensus:{taskId:task.id, state:task.state}}});
+      }
+      broadcast(room, {type:"room", room:roomSummary(room)});
+    },
+  });
+  return room.consensus;
+}
+function requireConsensusIdle(room) {
+  if (room.consensus?.active) throw Object.assign(new Error("共识协商正在运行或停止中，请先停止协商后再操作聊天室。"), {status:409});
+}
+function consensusSummary(room) {
+  const task = room.consensus?.snapshot();
+  return task ? {active:room.consensus.active, id:task.id, state:task.state, usedRounds:task.usedRounds,
+    maxRounds:task.maxRounds, calls:task.calls?.length || 0} : {active:false, state:"IDLE"};
 }
 
 function saveState(room) { writeJSON(room.stateFile, room.state); }
@@ -2519,6 +2563,7 @@ function roomSummary(room) {
   }
   return {
     name: room.name,
+    consensus: consensusSummary(room),
     cfg: room.cfg,
     adoptedMemory: room.state.recorderContext?{version:room.state.recorderContext.version,adoptedAt:room.state.recorderContext.adoptedAt||null}:null,
     dir: room.dir,
@@ -2559,7 +2604,7 @@ function roomSummary(room) {
     // when `busy` is momentarily empty. Anything asking "is the room idle?"
     // needs this or it gets a false yes during a handoff — which is true of an
     // ordinary hop and lurk chain as much as a pair cycle.
-    working: !!room.pairActive || room.exchanges > 0,
+    working: !!room.consensus?.active || !!room.pairActive || room.exchanges > 0,
     busy: [...room.busy.keys()],
     // Provenance rides alongside `busy` rather than replacing it: too much
     // already asks `busy.includes(agent)`, and those call sites only want the
@@ -4385,6 +4430,7 @@ async function runPairCycle(room, userTurn, pair, gen, chain) {
 // "Continue" after a round cap: the worker takes the outstanding review and
 // the loop picks up where it stopped.
 async function continuePair(room, requestedCapN = null) {
+  requireConsensusIdle(room);
   const pair = pairSnapshot(room);
   if (!pair) throw Object.assign(new Error("pair mode isn't on"), { status: 400 });
   // A continuation is a fix followed by another review, so it needs both roles
@@ -4923,6 +4969,7 @@ function launchUserDispatch(room, userTurn, {
 }
 
 function handleUserMessage(room, rawText, targetSel, rawImages, rawFiles, rawRelay = {}) {
+  requireConsensusIdle(room);
   const raw0 = String(rawText || "").trim();
   if (raw0.length > MAX_MESSAGE_TEXT) {
     throw Object.assign(new Error(`message text must be ${MAX_MESSAGE_TEXT.toLocaleString()} characters or shorter`), { status: 413 });
@@ -5518,6 +5565,7 @@ function scheduleCatchUps(room) {
 }
 
 function maybeRunCatchUp(room, agent) {
+  if (room.consensus?.active) return;
   const pending = catchUpState(room, agent);
   if (!pending) return;
   // Wait for every accepted user exchange to settle. This both gives user work
@@ -5758,7 +5806,7 @@ function broadcastQueue(room) {
 // one turn of a chain and the next.
 function roomWorkInFlight(room) {
   return room.busy.size > 0 || room.pending.length > 0 ||
-    room.exchanges > 0 || !!room.pairActive;
+    room.exchanges > 0 || !!room.pairActive || !!room.consensus?.active;
 }
 
 function seatOccupied(room, agent) {
@@ -6094,6 +6142,7 @@ function clearWithdrawals(room, n, seats) {
 // that never received it. `priority` is deliberately not a free parameter:
 // head-of-lane has exactly one producer in the system, and it is not this one.
 function dispatchFromSource(room, { sourceN, seats, instruction = null, priority = "tail", clearWithdrawal = true }) {
+  requireConsensusIdle(room);
   if (priority !== "tail") {
     throw Object.assign(new Error(`unsupported dispatch priority: ${priority}`), { status: 400 });
   }
@@ -6200,6 +6249,7 @@ function wakeSeat(room, agent, opts = {}) {
 // delta at their real position and the seat can tell a stale request from a
 // live one.
 function wakeAndDeliver(room, agent) {
+  requireConsensusIdle(room);
   // Preflight before any mutation. A sleeping seat can still be busy — sleep
   // deliberately lets an in-flight response finish — and waking first would
   // leave the seat awake with its work undelivered and its sleep state already
@@ -6372,6 +6422,7 @@ function handleRetryDiscarded(room, sourceN, requested = null) {
 }
 
 function handleRetry(room, options = {}) {
+  requireConsensusIdle(room);
   const lu = room.state.lastUser;
   if (Object.prototype.hasOwnProperty.call(options, "rootN")) {
     if (!Number.isSafeInteger(options.rootN) || options.rootN <= 0) {
@@ -6478,6 +6529,7 @@ function handleRetry(room, options = {}) {
 //   - A stale pin degrades, never escalates: handleStop returns
 //     { stale: true } having touched nothing, and the ask proceeds.
 function handleAsk(room, opts = {}) {
+  requireConsensusIdle(room);
   // ---- 1. validate everything before mutating anything ----
   // Same discipline as wakeAndDeliver: a refusal must leave the run the user was
   // looking at provably still running.
@@ -6618,6 +6670,16 @@ function pinnedRuns(room, pins) {
 }
 
 function handleStop(room, opts = {}) {
+  const consensusScope = opts.scope || (opts.agent != null ? 'seat' : 'all');
+  if (room.consensus?.active && consensusScope !== 'queue') {
+    if (!STOP_SCOPES.has(consensusScope)) throw Object.assign(new Error('unknown stop scope'), {status:400});
+    if (consensusScope === 'seat' && !seatIds(room).includes(opts.agent)) throw Object.assign(new Error('unknown agent'), {status:400});
+    const pinned = opts.runId ? [...room.runs.values()].some(run => run.runId === opts.runId && (!opts.agent || run.agent === opts.agent))
+      : Array.isArray(opts.runs) ? pinnedRuns(room, opts.runs).length > 0 : true;
+    if (!pinned) return {stopped:false, count:0, cancelled:0, stale:true, scope:consensusScope};
+    room.consensus.stop();
+    return {stopped:true, count:room.runs.size, cancelled:0, consensus:true};
+  }
   const agent = opts.agent === undefined || opts.agent === null ? null : opts.agent;
   const runId = opts.runId || null;
   const pins = Array.isArray(opts.runs) ? opts.runs : null;
@@ -6854,6 +6916,7 @@ if ($picked) { Write-Output $picked }`;
 // ---- room lifecycle: delete (to .trash) and rename ----
 
 function closeRoom(room) {
+  room.consensus?.stop();
   recorder.cancel(room);
   for (const res of room.clients) { try { res.end(); } catch { /* already gone */ } }
   room.clients.clear();
@@ -6914,6 +6977,8 @@ function renameRoom(room, newName) {
   room.stateFile = path.join(newDir, "state.json");
   room.eventsFile = path.join(newDir, "events.jsonl");
   room.transcriptFile = path.join(newDir, "transcript.md");
+  room.consensus = null;
+  consensusFor(room);
   rooms.set(newName, room);
 
   // Every briefing names transcriptFile, so even a project-linked session
@@ -6930,6 +6995,7 @@ function renameRoom(room, newName) {
 }
 
 function handleNewConversation(room) {
+  requireConsensusIdle(room);
   if (recorder.isBusy(room)) throw Object.assign(new Error("记录员正在整理，请完成后再开始新对话。"), {status:409});
   try { recorder.sync(room); } catch { /* keep the existing internal transcript as recovery */ }
   recorder.cancel(room);
@@ -7127,6 +7193,37 @@ const server = http.createServer(async (req, res) => {
     // Everything past this point is the API, and needs the page's token.
     if (!authorized(req, url, route)) {
       return json(res, 403, { error: "forbidden — the Parley API needs the session token from its own page" });
+    }
+
+    if (route === "GET /api/consensus") {
+      const room = loadRoom(url.searchParams.get("room") || "default");
+      const consensus = consensusFor(room);
+      const task = consensus.snapshot(url.searchParams.get("id") || undefined);
+      if (!task) return json(res, 404, {error:"共识任务不存在。"});
+      return json(res, 200, {task, active:consensus.active, tasks:consensus.list()});
+    }
+    if (route === "POST /api/consensus/start") {
+      const body = await readBody(req, 250000);
+      const room = loadRoom(body.room || "default");
+      if (roomWorkInFlight(room) || seatIds(room).some(a => catchUpState(room, a)))
+        throw Object.assign(new Error("请先完成或停止当前聊天、队列和待接续工作。"), {status:409});
+      const seats = Object.fromEntries(seatIds(room).map(a => [providerIdOf(room, a), a]));
+      if (seatIds(room).length !== 2 || !seats.codex || !seats.claude)
+        throw Object.assign(new Error("共识协商需要 Codex 和 Claude 各一个席位。"), {status:400});
+      if (seatIds(room).some(a => isAsleep(room, a)))
+        throw Object.assign(new Error("请先唤醒 Codex 和 Claude。"), {status:409});
+      room.consensusSeats = seats;
+      const task = consensusFor(room).start(body.question, body.maxRounds);
+      appendEntry(room, {kind:"user", author:"user", target:"both", text:task.question,
+        meta:{consensus:{taskId:task.id, maxRounds:task.maxRounds}}});
+      return json(res, 202, {task});
+    }
+    if (route === "POST /api/consensus/stop") {
+      const body = await readBody(req, 1024);
+      const room = loadRoom(body.room || "default");
+      if (body.id && body.id !== consensusFor(room).snapshot().id)
+        throw Object.assign(new Error("任务已切换，请刷新状态。"), {status:409});
+      return json(res, 200, {task:consensusFor(room).stop()});
     }
 
     if (route === "GET /api/rooms") return json(res, 200, { rooms: roomsWithModes(), providers: providerCatalog() });
@@ -7449,6 +7546,7 @@ const server = http.createServer(async (req, res) => {
     if (route === "POST /api/seat/sleep") {
       const body = await readBody(req);
       const room = loadRoom(body.room || "default");
+      requireConsensusIdle(room);
       const agent = String(body.agent || "").toLowerCase();
       if (!seatIds(room).includes(agent)) return json(res, 400, { error: `unknown agent: ${body.agent}` });
       // Idempotent on purpose: a second click, or a second tab, reports the
@@ -7475,6 +7573,7 @@ const server = http.createServer(async (req, res) => {
     if (route === "POST /api/queue/pause") {
       const body = await readBody(req);
       const room = loadRoom(body.room || "default");
+      requireConsensusIdle(room);
       if (typeof body.paused !== "boolean") {
         return json(res, 400, { error: "paused must be true or false" });
       }
@@ -7499,6 +7598,7 @@ const server = http.createServer(async (req, res) => {
     if (route === "POST /api/queue/retry") {
       const body = await readBody(req);
       const room = loadRoom(body.room || "default");
+      requireConsensusIdle(room);
       // The deliveries themselves arrive over SSE, like every other dispatch.
       const result = handleRetryDiscarded(room, body.n,
         Array.isArray(body.agents) ? body.agents : null);
@@ -7517,6 +7617,7 @@ const server = http.createServer(async (req, res) => {
     if (route === "POST /api/config") {
       const { room: name, config } = await readBody(req);
       const room = loadRoom(name || "default");
+      requireConsensusIdle(room);
       const prevMode = room.cfg.mode || "talk";
       const prevProjectDir = room.cfg.projectDir || null;
       const prevRoomNote = normalizeRoomNote(room.cfg.roomNote);
@@ -7844,6 +7945,7 @@ function killAllChildren() {
 }
 
 function shutdown() {
+  for (const room of rooms.values()) room.consensus?.stop();
   recorder.flush();
   killAllChildren();
   process.exit(0);

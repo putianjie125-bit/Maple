@@ -18,7 +18,7 @@ async function create(name, budget, extra = {}) {
   assert.equal((await server.api("POST", "/api/rooms", { name })).status, 200);
   const fresh = await server.room(name);
   assert.equal(fresh.room.cfg.accounting, "automatic");
-  assert.equal(fresh.room.cfg.hopBudget, 4);
+  assert.equal(fresh.room.cfg.hopBudget, 2); // Maple's public default; budgets below are explicit.
   await server.configure(name, { accounting: "automatic", hopBudget: budget, ...extra });
 }
 async function send(name, text, target = "both") {

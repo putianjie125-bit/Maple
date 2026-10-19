@@ -3605,6 +3605,17 @@ async function send() {
   const imageDrafts = [...state.draftImages];
   const fileDrafts = [...state.draftFiles];
   if ((!text && !imageDrafts.length && !fileDrafts.length) || state.sending) return;
+  if (window.mapleConsensus?.enabled()) {
+    if (imageDrafts.length || fileDrafts.length) return toast("共识协商目前仅支持文字任务，请先移除附件。", true);
+    state.sending = true; $("sendBtn").disabled = true;
+    const room = state.room;
+    try {
+      await window.mapleConsensus.start(text);
+      if (state.room === room && input.value.trim() === text) { input.value = ""; autosize(); hideMention(); }
+    } catch (e) { toast(e.message, true); }
+    finally { state.sending = false; $("sendBtn").disabled = false; }
+    return;
+  }
   if (text.startsWith("/") && (imageDrafts.length || fileDrafts.length) && !/^\/pair\b/i.test(text)) {
     toast("附件可随普通消息或 /pair 任务发送，不能附在本地斜杠命令上。", true);
     return;

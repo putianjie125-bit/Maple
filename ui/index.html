@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/ui/styles.css?v=__PARLEY_ASSET_VERSION__">
 <link rel="stylesheet" href="/ui/recorder.css?v=__PARLEY_ASSET_VERSION__">
 <link rel="stylesheet" href="/ui/quota.css?v=__PARLEY_ASSET_VERSION__">
+<link rel="stylesheet" href="/ui/consensus.css?v=__PARLEY_ASSET_VERSION__">
 <link rel="stylesheet" href="/ui/controls.css?v=__PARLEY_ASSET_VERSION__">
 <link rel="stylesheet" href="/ui/maple.css?v=__PARLEY_ASSET_VERSION__">
 </head>
@@ -97,6 +98,23 @@
 
     <div id="composerWrap">
       <div id="composer">
+        <label class="consensus-mode">交流方式 <select id="conversationMode" aria-label="交流方式"><option value="chat">普通聊天</option><option value="consensus">🤝 共识协商（Consensus）</option></select></label>
+        <section id="consensusPanel" hidden aria-label="共识协商">
+          <label>最大协商轮数 <select id="consensusRounds"><option>1</option><option>2</option><option selected>3</option><option>5</option><option>10</option><option value="custom">自定义</option></select></label>
+          <input id="consensusCustom" type="number" min="1" max="20" step="1" value="3" aria-label="自定义轮数" hidden>
+          <p>一轮 = 双方各讨论一次；初始独立回答计第 1 轮，确认不计轮数。双方不同提案均可进入确认，每轮最多 6 次调用。</p>
+          <p>在下方输入任务，点击“开始协商”。双方均须唤醒；仅协商文字方案，不执行工具或修改项目文件。</p>
+          <p id="consensusStatus" role="status" aria-live="polite">尚未启动 (IDLE)</p>
+          <button type="button" id="consensusStop" disabled>停止协商</button>
+          <button type="button" id="consensusRefresh">查看当前状态</button>
+          <label>历史任务 <select id="consensusHistory"><option value="">当前任务</option></select></label>
+          <details><summary>任务与当前候选方案</summary><p id="consensusId"></p><p id="consensusQuestion"></p><pre id="consensusCandidate"></pre></details>
+          <details><summary>双方确认情况</summary><div id="consensusVotes"></div></details>
+          <details open><summary>最终共同方案</summary><pre id="consensusFinal"></pre></details>
+          <details><summary>尚未解决的分歧</summary><pre id="consensusDisagreements"></pre></details>
+          <details><summary>CLI 返回的用量字段</summary><pre id="consensusUsage"></pre></details>
+          <p id="consensusError" role="alert"></p>
+        </section>
         <div id="modelBar" aria-label="模型快捷切换"></div>
         <div id="mention"></div>
         <div class="chips" id="chipsRow">
@@ -232,5 +250,6 @@
 <script src="/ui/recorder.js?v=__PARLEY_ASSET_VERSION__"></script>
 <script src="/ui/quota.js?v=__PARLEY_ASSET_VERSION__"></script>
 <script src="/ui/controls.js?v=__PARLEY_ASSET_VERSION__"></script>
+<script src="/ui/consensus.js?v=__PARLEY_ASSET_VERSION__"></script>
 </body>
 </html>

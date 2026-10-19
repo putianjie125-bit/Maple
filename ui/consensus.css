@@ -1,0 +1,13 @@
+.consensus-mode {display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px;color:var(--text-muted)}
+.consensus-mode select, #consensusPanel select, #consensusPanel input {font:inherit;color:inherit;background:var(--surface, #faf8f4);border:1px solid var(--border, #ddd);border-radius:6px;padding:4px;max-width:100%}
+#consensusPanel {border:1px solid var(--border, #ddd);border-radius:9px;background:var(--surface, #faf8f4);padding:10px;margin:6px 0;font-size:13px;max-height:38vh;overflow:auto;overflow-wrap:anywhere}
+#consensusPanel[hidden], #consensusCustom[hidden] {display:none}
+#consensusPanel p {margin:6px 0}
+#consensusPanel pre {font:inherit;white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0}
+#consensusPanel summary {cursor:pointer;padding:5px 0}
+#consensusError {color:#b43c27}
+#consensusId {font-size:11px;color:var(--text-muted)}
+#consensusCustom {width:70px}
+#composer.consensus-selected #sendBtn {width:auto;min-width:88px;height:36px;padding:5px 10px;font-size:13px;white-space:nowrap}
+#composer.consensus-selected #chipsRow, #composer.consensus-selected #routeHint {display:none}
+#consensusVotes p {white-space:pre-wrap}

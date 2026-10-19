@@ -29,5 +29,8 @@ jobs:
           node --check ui/controls.js
           node --check ui/recorder.js
           node --check lib/client-assets.mjs
+          node --check lib/consensus.mjs
+          node --check lib/consensus-transport.mjs
+          node --check ui/consensus.js
       - name: Test using local fake CLIs and API responses
         run: npm test
