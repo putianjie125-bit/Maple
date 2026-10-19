@@ -13,7 +13,7 @@ try {
   assert.equal(packed.status, 0, packed.stderr);
   const manifest = JSON.parse(packed.stdout)[0];
   const paths = new Set(manifest.files.map((file) => file.path));
-  for (const file of ["parley.mjs", "lib/budget-policy.mjs", "lib/budget-prompts.mjs", "lib/causal-coordinator.mjs", "lib/client-assets.mjs", "ui/index.html", "ui/styles.css", "ui/app.js"]) {
+  for (const file of ["parley.mjs", "lib/budget-policy.mjs", "lib/budget-prompts.mjs", "lib/causal-coordinator.mjs", "lib/client-assets.mjs", "lib/consensus.mjs", "lib/consensus-transport.mjs", "ui/consensus.js", "ui/consensus.css", "ui/index.html", "ui/styles.css", "ui/app.js"]) {
     assert.ok(paths.has(file), `packed package contains ${file}`);
   }
   assert.ok(![...paths].some((file) => /^(?:test|node_modules)\//.test(file)));
@@ -38,7 +38,7 @@ try {
     server.once("error", (error) => { clearTimeout(timer); reject(error); });
   });
   const html = await fetch(base).then((response) => response.text());
-  for (const file of ["styles.css", "app.js"]) {
+  for (const file of ["styles.css", "app.js", "consensus.css", "consensus.js"]) {
     const ref = new RegExp(`/ui/${file.replace(".", "\\.")}\\?v=[a-f0-9]+`).exec(html)?.[0];
     assert.ok(ref, `versioned ${file} reference`);
     const asset = await fetch(base + ref);
